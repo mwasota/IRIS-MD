@@ -4,7 +4,7 @@
 //                                                                                                      //
 //                                             𝚅.1.2.7                                                  // 
 //                                                                                                      //
-//                          ██╗ ██████╗ ██╗███████╗    ███╗   ███╗ ██████╗                               //
+//                          ██╗ ██████╗ ██╗███████╗    ███╗   ███╗ ██████╗                              //
 //                          ██║ ██╔══██╗██║██╔════╝    ████╗ ████║ ██╔══██╗                             //
 //                          ██║ ██████╔╝██║███████╗    ██╔████╔██║ ██║  ██║                             //
 //                          ██║ ██╔══██╗██║╚════██║    ██║╚██╔╝██║ ██║  ██║                             //
@@ -33,49 +33,66 @@ CONDITIONS IT CAN LEADS TO TERMINATE UR ACCOUNT FROM THAT PLATFORM
 
 **/
 
-const fs = require('fs');
-const dotenv = require('dotenv');
-const { Sequelize } = require('sequelize');
-const toBool = (x) => x === 'true';
-const DATABASE_URL = process.env.DATABASE_URL || './lib/database.db';
-if (fs.existsSync('config.env')) {
-  dotenv.config({
-    path: './config.env'
-  });
-}
 
 
-module.exports = {
-    SESSION_ID: process.env.SESSION_ID || '',
-    HANDLERS: process.env.HANDLERS || '.',
-    IG: process.env.IG || 'https://instagram.com/sla.sher_/',
-    INFO: process.env.INFO || 'ɪʀɪꜱ-ᴍᴅ;VᴇɴᴏxSᴇʀ;https://imgur.com/D60nScQ.jpg',
-    URL: process.env.URL || 'https://whatsapp.com/channel/0029VaHt1710AgWB1B0Lkg0Q',
-    SUDO: process.env.SUDO || '8801975492880',
-    AUTO_STATUS_VIEW: process.env.AUTO_STATUS_VIEW || 'true',
-    ALWAYS_ONLINE: process.env.ALWAYS_ONLINE || 'true',
-    MODE: process.env.MODE || 'public',
-    STICKER_DATA: process.env.STICKER_DATA || '️ᴍᴀᴅᴇ ʙʏ; ɪʀɪꜱ-ᴍᴅ',
-    HAPP: process.env.HAPP || '', // ɪꜰ ɴᴏᴛ ʜᴇʀᴏᴋᴜ, ᴛʜᴇɴ ᴋᴇᴇᴘ ɪᴛ ʙʟᴀɴᴋᴇᴅ
-    HKEY: process.env.HKEY || '', // ɪꜰ ɴᴏᴛ ʜᴇʀᴏᴋᴜ, ᴛʜᴇɴ ᴋᴇᴇᴘ ɪᴛ ʙʟᴀɴᴋᴇᴅ
-    DATABASE_URL: DATABASE_URL
-};
 
-const DATABASE = DATABASE_URL === "./lib/database.db" ?
-    new Sequelize({
-        dialect: "sqlite",
-        storage: DATABASE_URL,
-        logging: false
-    }) :
-    new Sequelize(DATABASE_URL, {
-        dialect: "postgres",
-        ssl: true,
-        protocol: "postgres",
-        dialectOptions: {
-            native: true,
-            ssl: { require: true, rejectUnauthorized: false },
-        },
-        logging: false
-    });
 
-module.exports.DATABASE = DATABASE;
+
+
+
+
+
+
+const { INFO, SUDO, IG } = require('../info.js');
+const { iris, isPublic } = require("../lib/commands.js");
+const { toAudio, getBuffer } = require("../lib/functions.js");
+
+const audios = [
+    "https://telegra.ph/file/816cc6a890b000297a561.mp4",
+    "https://telegra.ph/file/e322e2b4d7f285f11f888.mp4",
+    "https://telegra.ph/file/549b2f05d7ea98d3fe869.mp4"
+];
+
+
+const images = [
+    "https://i.ibb.co/2Fxnv8W/bot2.jpg",
+    "https://i.ibb.co/G35jn3J/bot2p.jpg"
+];
+
+const title = INFO.split(';')[1];
+const body = "|| ◁ㅤ❚❚ㅤ▷||ㅤ ↻";
+const url = IG;
+const ptt = true;
+
+iris({ on: "text", fromMe: isPublic }, async ({ m, client, args }) => {
+    const sudo = SUDO.split(",");
+    if (args.some(arg => sudo.includes(arg))) {
+        const randomAudio = audios[Math.floor(Math.random() * audios.length)];
+        const randomImage = images[Math.floor(Math.random() * images.length)];
+
+        const audioBuffer = await getBuffer(randomAudio);
+        const imageBuffer = await getBuffer(randomImage);
+
+        const audioRes = await toAudio(audioBuffer, 'mp4');
+
+        client.sendMessage(m.jid, {
+            audio: audioRes,
+            mimetype: 'audio/mpeg',
+            ptt: ptt,
+            waveform: [0, 99, 0, 99, 0, 99, 0, 99, 0],
+            contextInfo: {
+                forwardingScore: 999,
+                isForwarded: true,
+                externalAdReply: {
+                    title: title,
+                    body: body,
+                    mediaType: 2,
+                    thumbnail: imageBuffer,
+                    mediaUrl: url,
+                    sourceUrl: url,
+                    showAdAttribution: true
+                }
+            }
+        }, { quoted: m });
+    }
+});

@@ -4,7 +4,7 @@
 //                                                                                                      //
 //                                             𝚅.1.2.7                                                  // 
 //                                                                                                      //
-//                          ██╗ ██████╗ ██╗███████╗    ███╗   ███╗ ██████╗                               //
+//                          ██╗ ██████╗ ██╗███████╗    ███╗   ███╗ ██████╗                              //
 //                          ██║ ██╔══██╗██║██╔════╝    ████╗ ████║ ██╔══██╗                             //
 //                          ██║ ██████╔╝██║███████╗    ██╔████╔██║ ██║  ██║                             //
 //                          ██║ ██╔══██╗██║╚════██║    ██║╚██╔╝██║ ██║  ██║                             //
@@ -33,49 +33,36 @@ CONDITIONS IT CAN LEADS TO TERMINATE UR ACCOUNT FROM THAT PLATFORM
 
 **/
 
-const fs = require('fs');
-const dotenv = require('dotenv');
-const { Sequelize } = require('sequelize');
-const toBool = (x) => x === 'true';
-const DATABASE_URL = process.env.DATABASE_URL || './lib/database.db';
-if (fs.existsSync('config.env')) {
-  dotenv.config({
-    path: './config.env'
-  });
-}
 
 
-module.exports = {
-    SESSION_ID: process.env.SESSION_ID || '',
-    HANDLERS: process.env.HANDLERS || '.',
-    IG: process.env.IG || 'https://instagram.com/sla.sher_/',
-    INFO: process.env.INFO || 'ɪʀɪꜱ-ᴍᴅ;VᴇɴᴏxSᴇʀ;https://imgur.com/D60nScQ.jpg',
-    URL: process.env.URL || 'https://whatsapp.com/channel/0029VaHt1710AgWB1B0Lkg0Q',
-    SUDO: process.env.SUDO || '8801975492880',
-    AUTO_STATUS_VIEW: process.env.AUTO_STATUS_VIEW || 'true',
-    ALWAYS_ONLINE: process.env.ALWAYS_ONLINE || 'true',
-    MODE: process.env.MODE || 'public',
-    STICKER_DATA: process.env.STICKER_DATA || '️ᴍᴀᴅᴇ ʙʏ; ɪʀɪꜱ-ᴍᴅ',
-    HAPP: process.env.HAPP || '', // ɪꜰ ɴᴏᴛ ʜᴇʀᴏᴋᴜ, ᴛʜᴇɴ ᴋᴇᴇᴘ ɪᴛ ʙʟᴀɴᴋᴇᴅ
-    HKEY: process.env.HKEY || '', // ɪꜰ ɴᴏᴛ ʜᴇʀᴏᴋᴜ, ᴛʜᴇɴ ᴋᴇᴇᴘ ɪᴛ ʙʟᴀɴᴋᴇᴅ
-    DATABASE_URL: DATABASE_URL
-};
 
-const DATABASE = DATABASE_URL === "./lib/database.db" ?
-    new Sequelize({
-        dialect: "sqlite",
-        storage: DATABASE_URL,
-        logging: false
-    }) :
-    new Sequelize(DATABASE_URL, {
-        dialect: "postgres",
-        ssl: true,
-        protocol: "postgres",
-        dialectOptions: {
-            native: true,
-            ssl: { require: true, rejectUnauthorized: false },
-        },
-        logging: false
-    });
 
-module.exports.DATABASE = DATABASE;
+
+
+
+
+
+
+
+const {iris, isPublic} = require("../lib/commands.js");
+const {INFO} = require("../info.js");
+
+iris(
+    {
+        name: "igstalk",
+        category: "stalker",
+        fromMe: isPublic,
+        desc: "stalk ur ig account"
+    },
+    async ({
+        client, m, args
+    }) => {
+if (!args) return await m.reply("_Enter Username, account must be public_");
+args = args || m.quoted?.text;
+let sample = await fetch(`https://api-aswin-sparky.koyeb.app/api/search/ig?search=${args}`);
+var data = await sample.json();
+ig = data.data
+let venox = { "key": { "participants":"0@s.whatsapp.net", "remoteJid": "status@broadcast", "fromMe": false, "id": "Halo" }, "message": { "contactMessage": { "displayName": `${INFO.split(";")[0]}`,"vcard": `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD` }}, "participant": "0@s.whatsapp.net" }
+client.sendMessage(m.jid, { image: { url: ig.avatar }, caption: `_Name : ${ig.name}_\n_Username : ${ig.username}_\n\n_Followers : ${ig.followers}_\n_Following : ${ig.following}_\n_Post : ${ig.posts}_\nBio : ${ig.description}` }, { quoted: venox })
+  }
+);
